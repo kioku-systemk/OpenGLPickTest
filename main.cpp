@@ -4,15 +4,26 @@
 #include "linmath.h"
 #include <stdlib.h>
 #include <stdio.h>
+
+
+static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    fprintf(stdout, "Pos: (%lf,%lf)\n", xpos, ypos);
+}
+
+//--------------------------
+
 static const struct
 {
-    float x, y;
+    float x, y, z;
     float r, g, b;
-} vertices[3] =
+    float u, v;
+} vertices[4] =
 {
-    { -0.6f, -0.4f, 1.f, 0.f, 0.f },
-    {  0.6f, -0.4f, 0.f, 1.f, 0.f },
-    {   0.f,  0.6f, 0.f, 0.f, 1.f }
+    { -0.6f, -0.4f, 0.f,  0.f, 0.f, 0.f,  1.f, 0.f },
+    {  0.6f, -0.4f, 0.f,  0.f, 1.f, 0.f,  1.f, 0.f },
+    { -0.6f,  0.4f, 0.f,  0.f, 0.f, 1.f,  0.f, 1.f },
+    {  0.6f,  0.4f, 0.f,  0.f, 1.f, 1.f,  1.f, 1.f }
 };
 static const char* vertex_shader_text =
 "#version 110\n"
@@ -41,6 +52,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
+
 int main(void)
 {
     GLFWwindow* window;
@@ -51,13 +63,14 @@ int main(void)
         exit(EXIT_FAILURE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+    window = glfwCreateWindow(640, 480, "PickTest", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
     glfwSetKeyCallback(window, key_callback);
+    glfwSetCursorPosCallback(window, cursor_position_callback);
     glfwMakeContextCurrent(window);
     //gladLoadGL(glfwGetProcAddress);
     glfwSwapInterval(1);
@@ -95,12 +108,12 @@ int main(void)
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         mat4x4_identity(m);
-        mat4x4_rotate_Z(m, m, (float) glfwGetTime());
+        mat4x4_rotate_Z(m, m, (float) glfwGetTime() * 0.5);
         mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
         mat4x4_mul(mvp, p, m);
         glUseProgram(program);
         glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
