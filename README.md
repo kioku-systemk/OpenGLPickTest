@@ -4,6 +4,8 @@ OpenGL Pick test sample.
 
 ## How to build?
 
+    $git clone https://github.com/kioku-systemk/OpenGLPickTest --recursive
+    $cd OpenGLPickTest
     $mkdir build
     $cd build
     $cmake ..
