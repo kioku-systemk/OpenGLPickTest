@@ -11,4 +11,8 @@ OpenGL Pick test sample.
 
 ## Run
 
-    $./Build/Debug/picktest
+    $./picktest
+
+## Image
+
+![screenshot](img/scr.jpg "screenshot")
