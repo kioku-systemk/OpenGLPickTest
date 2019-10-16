@@ -11,6 +11,7 @@ mat4x4 viewMat;
 mat4x4 worldMat;
 mat4x4 projMat;
 int viewport[4];
+int winSize[2];
 
 const float INFINITY_T = 1.e10f;
 
@@ -42,8 +43,8 @@ int glhUnProjectf(float winx, float winy, float winz, mat4x4 view, mat4x4 projec
     mat4x4_invert(m, A);
 
     // Transformation of normalized coordinates between -1 and 1
-    in[0]=(winx-(float)viewport[0])/(float)viewport[2]*2.0-1.0;
-    in[1]=(winy-(float)viewport[1])/(float)viewport[3]*2.0-1.0;
+    in[0]=(winx)/(float)winSize[0]*2.0-1.0;
+    in[1]=(winy)/(float)winSize[1]*2.0-1.0;
     in[2]=2.0*winz-1.0;
     in[3]=1.0;
     // Objects coordinates
@@ -111,11 +112,16 @@ float intersectTriangle(vec3 orig, vec3 dir, vec4 vertices[3], float lastHitT, v
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    //fprintf(stdout, "Pos: (%lf,%lf)\n", xpos, ypos);
-    
     // calc view space ray dir
     vec3 orgpos, endpos, raydir;
-    float screenCoord[2] = {(float)xpos, (float)viewport[3] - (float)ypos};
+    float screenCoord[2] = {(float)xpos, (float)winSize[1] - (float)ypos};
+    //fprintf(stdout, "Pos: (%lf,%lf)\n", screenCoord[0], screenCoord[1]);
+    
+    if (screenCoord[0] < 0 || screenCoord[0] > winSize[0]
+    ||  screenCoord[1] < 0 || screenCoord[1] > winSize[1]) {
+        return;
+    }
+    
     glhUnProjectf(screenCoord[0], screenCoord[1], -1.f, viewMat, projMat, viewport, orgpos); // on near plane
     glhUnProjectf(screenCoord[0], screenCoord[1],  1.f, viewMat, projMat, viewport, endpos);   // on far plane
     vec3_sub(raydir, endpos, orgpos);
@@ -196,6 +202,18 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
+void resize_callback(GLFWwindow *window, int width, int height)
+{
+    winSize[0] = width;
+    winSize[1] = height;
+
+    int renderBufferWidth, renderBufferHeight;
+    glfwGetFramebufferSize(window, &renderBufferWidth, &renderBufferHeight);
+    viewport[2] = renderBufferWidth;
+    viewport[3] = renderBufferHeight;
+    glViewport(0, 0, renderBufferWidth, renderBufferHeight);
+}
+
 bool printShaderInfoLog(GLuint shader)
 {
     GLsizei bufSize;
@@ -236,7 +254,9 @@ int main(void)
         exit(EXIT_FAILURE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    window = glfwCreateWindow(640, 480, "PickTest", NULL, NULL);
+    winSize[0] = 640;
+    winSize[1] = 480;
+    window = glfwCreateWindow(winSize[0], winSize[1], "PickTest", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -244,6 +264,7 @@ int main(void)
     }
     glfwSetKeyCallback(window, key_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
+    glfwSetWindowSizeCallback(window, resize_callback);
     glfwMakeContextCurrent(window);
     //gladLoadGL(glfwGetProcAddress);
     glfwSwapInterval(1);
