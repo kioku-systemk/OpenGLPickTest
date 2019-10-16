@@ -1,11 +1,17 @@
 
-//#include <glad/gl.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#include "glad/glad.h"
 #include <GLFW/glfw3.h>
 #include "linmath.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <vector>
+
+#define PI 3.1415926
 
 mat4x4 viewMat;
 mat4x4 worldMat;
@@ -266,7 +272,7 @@ int main(void)
     glfwSetCursorPosCallback(window, cursor_position_callback);
     glfwSetWindowSizeCallback(window, resize_callback);
     glfwMakeContextCurrent(window);
-    //gladLoadGL(glfwGetProcAddress);
+    gladLoadGL();
     glfwSwapInterval(1);
 
     // NOTE: OpenGL error checks have been omitted for brevity
@@ -327,7 +333,7 @@ int main(void)
         mat4x4_rotate_Z(m, m, (float) glfwGetTime() * 0.1);
         mat4x4_rotate_Y(m, m, (float) glfwGetTime() * 0.2);
         mat4x4_translate(v, 0.f, 0.f, -2.f);
-        mat4x4_perspective(p, 60.0/180.f*M_PI, ratio, 0.1, 10.0f);
+        mat4x4_perspective(p, 60.0/180.f*PI, ratio, 0.1, 10.0f);
         mat4x4_mul(mv, v, m);
         mat4x4_mul(mvp, p, mv);
         

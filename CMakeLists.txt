@@ -11,5 +11,5 @@ include_directories(third_party/glfw/include)
 find_package(OpenGL REQUIRED)
 
 include_directories(${GLFW_INCLUDE_DIR})
-add_executable(picktest main.cpp)
+add_executable(picktest main.cpp glad/glad.c)
 target_link_libraries(picktest glfw ${OPENGL_LIBRARY})
